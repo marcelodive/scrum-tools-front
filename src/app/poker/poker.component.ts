@@ -95,7 +95,6 @@ export class PokerComponent implements OnInit {
 
   private setSocketsSubscribers() {
     this.socket.fromEvent('room updated').subscribe((room) => {
-      console.log(room);
       this.room = room as Room;
       this.setMyPokerUser();
     });

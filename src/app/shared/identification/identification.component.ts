@@ -34,11 +34,17 @@ export class IdentificationComponent implements OnInit {
     if (this.roomId) {
       const newUserInfo: NewUserInfo = { roomId: this.roomId, username };
       this.socket.emit(`new user enter ${this.tool} room`, newUserInfo);
+      this.joinWSRoom(this.roomId);
     } else {
       const room: Room = this.buildRoom();
       const queryParams = { stringifiedRoom: JSON.stringify(room), username };
+      this.joinWSRoom(room.id);
       this.router.navigate([`/${this.tool}`], { queryParams });
     }
+  }
+
+  private joinWSRoom(roomId: string) {
+    this.socket.emit(`join room`, roomId);
   }
 
   private buildRoom(): Room {
@@ -65,7 +71,6 @@ export class IdentificationComponent implements OnInit {
   
   private setSocketsSubscribers() {
     this.socket.fromEvent('room updated').subscribe((room) => {
-      console.log(room);
       const username: string = this.identificationForm.get('name')?.value;
       const updatedRoom: Room = room as Room;
       if (updatedRoom.pokerUsers.find((pokerUser: PokerUser) => pokerUser.name === username)) {
@@ -73,13 +78,6 @@ export class IdentificationComponent implements OnInit {
         this.router.navigate([`/${this.tool}`], { queryParams });
       }
     });    
-
-    // this.socket.fromEvent('new user enter poker room').subscribe((newUserInfo) => {
-    //   const userInfo: NewUserInfo = newUserInfo as NewUserInfo;
-    //   const pokerUser: PokerUser = {name: userInfo?.username};
-    //   this.room?.pokerUsers.push(pokerUser);
-    //   this.updateRoomAbroad();
-    // });
   }
 
 }
