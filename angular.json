@@ -7,6 +7,12 @@
   "newProjectRoot": "projects",
   "projects": {
     "scrum-tools-front": {
+      "i18n": {
+        "sourceLocale": "en-US",
+        "locales": {
+          "pt-BR": "./src/i18n/messages.pt-BR.xlf"
+        }
+      },
       "projectType": "application",
       "schematics": {
         "@schematics/angular:component": {
@@ -23,6 +29,8 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
+            "localize": ["en-US"],
+            "aot": true,
             "outputPath": "dist/scrum-tools-front",
             "index": "src/index.html",
             "main": "src/main.ts",

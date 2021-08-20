@@ -1,0 +1,13 @@
+<h2 class="nes-text is-primary">Scrum Poker</h2>
+
+<form [formGroup]="identificationForm" (ngSubmit)="onSubmit()">
+    <div class="nes-field">
+        <label i18n for="identification_field">Your name</label>
+        <input type="text" id="identification_field" class="nes-input input-rules" formControlName="name">
+    </div>
+    <br>
+    <button i18n type="submit" class="nes-btn" [ngClass]="{'is-disabled': !identificationForm.valid}"
+        [disabled]="!identificationForm.valid">
+        {{ buttonText }}
+    </button>
+</form>

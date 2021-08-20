@@ -1,0 +1,54 @@
+<div [style.margin.em]="1">
+    <div fxLayout="row" fxLayoutAlign="start start">
+        <h1 class="nes-text is-primary">Scrum Poker</h1>
+        <h6 class="nes-text is-disabled">v.0.1</h6>
+    </div>
+
+    <div class="users-list">
+        <ul class="nes-list is-disc">
+            <li *ngFor="let pokerUser of room?.pokerUsers">
+                {{pokerUser.name}} <span>({{getVoteToShow(pokerUser)}})</span>
+            </li>
+        </ul>
+    </div>
+
+    <p *ngIf="!room?.finishedVoting" i18n>Select your vote:</p>
+    <p *ngIf="room?.finishedVoting" i18n>Result:</p>
+
+    <div fxLayout="row" fxLayoutAlign="space-around center">
+        <ng-container *ngIf="!room?.finishedVoting">
+            <app-card class="nes-pointer" *ngFor="let cardNumber of cardNumbers" [cardNumber]="cardNumber"
+                (click)="updateUserVote(cardNumber)" [selected]="(cardNumber === myPokerUser?.vote)"></app-card>
+        </ng-container>
+        <app-card *ngIf="room?.finishedVoting" [cardNumber]="getResultCardNumber()" [cardHeader]="'🏆'"></app-card>
+    </div>
+
+    <br>
+
+    <div fxLayoutAlign="center center">
+        <progress class="nes-progress" [value]="getVotePercentage()" max="100"></progress>
+    </div>
+
+    <br>
+
+    <ng-container *ngIf="room?.admin === myPokerUser?.name">
+        <button i18n type="button" (click)="showResults()" class="nes-btn is-primary" *ngIf="!room?.finishedVoting">
+            View result
+        </button>
+        <button i18n type="button" (click)="resetVoting()" class="nes-btn is-primary" *ngIf="room?.finishedVoting">
+            Reset voting
+        </button>
+    </ng-container>
+
+    <div *ngIf="(room?.admin !== myPokerUser?.name) && myPokerUser?.vote && !room?.finishedVoting"
+        fxLayout="row">
+        <section class="icon-list" [style.marginTop.em]="3">
+            <i class="nes-mario"></i>
+          </section>
+        <div>
+            <div class="nes-balloon from-left">
+              <p i18n *ngIf="myPokerUser?.vote && !room?.finishedVoting">Waiting for administrator to display results</p>
+            </div>
+        </div>
+    </div>
+</div>
