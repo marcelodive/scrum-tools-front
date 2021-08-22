@@ -1,1 +1,110 @@
-<p>ballot works!</p>
+<div [style.margin.em]="1">
+    <div fxLayout="row" fxLayoutAlign="start start">
+        <h1 class="nes-text is-primary">Scrum ballot</h1>
+        <h6 class="nes-text is-disabled">v.0.1</h6>
+    </div>
+
+    <div class="users-list">
+        <ul class="nes-list is-disc">
+            <li *ngFor="let ballotUser of room?.ballotUsers">
+                {{ballotUser.name}} <span>({{ ballotUser.sort ? '?' : '' }})</span>
+            </li>
+        </ul>
+    </div>
+
+    <ng-container *ngIf="!room?.startedVoting && isAdmin()">
+        <p>Add options:</p>
+    
+        <div class="nes-field" *ngFor="let option of room?.options; let index = index; trackBy: trackByIndex">
+            <label for="name_field">Option {{index + 1}}</label>
+            <input (change)="addOption(index, options[index])" [(ngModel)]="options[index]" 
+                [value]="option" type="text" id="name_field" class="nes-input" (ngModelChange)="updateOption(index, options[index])">
+        </div>
+
+        <br>
+    
+        <ng-container *ngIf="isAdmin()">
+            <button i18n type="button" (click)="startVoting()" class="nes-btn is-primary"
+            [ngClass]="{'is-disabled': !canStartVoting()}" [disabled]="!canStartVoting()">
+                Start voting
+            </button>
+        </ng-container>
+    </ng-container>
+
+    <div *ngIf="!isAdmin() && !room?.startedVoting && !room?.finishedVoting"
+        fxLayout="row">
+        <section class="icon-list" [style.marginTop.em]="3">
+            <i class="nes-mario"></i>
+          </section>
+        <div>
+            <div class="nes-balloon from-left">
+              <p i18n>Waiting for administrator to finish typing options</p>
+            </div>
+        </div>
+    </div>
+
+    <ng-container *ngIf="room?.startedVoting && !room?.finishedVoting">
+        <div fxLayout="row" fxLayoutAlign="center center">
+            <ngx-sortable [items]="myBallotUser?.optionsToSort || []" [name]="'Sort:'" 
+                (listSorted)="listOrderChanged($event)" [listStyle]="{width:'100%', height:'100%'}">
+                <ng-template let-item>
+                    <div class="sortable-list-item">
+                        {{item}}
+                    </div>
+                </ng-template>
+            </ngx-sortable>
+        </div>
+
+        <br>
+
+        <button *ngIf="isAdmin()" i18n type="button" (click)="finishSorting(); showResults();" class="nes-btn is-primary">
+            Finish sorting and show results
+        </button>
+
+        <div *ngIf="!isAdmin()">
+            <button *ngIf="!myBallotUser?.sort" 
+                i18n type="button" (click)="finishSorting()" class="nes-btn is-primary">
+                Finish sorting
+            </button>
+            <div *ngIf="myBallotUser?.sort" fxLayout="row">
+            <section class="icon-list" [style.marginTop.em]="3">
+                <i class="nes-mario"></i>
+              </section>
+            <div>
+                <div class="nes-balloon from-left">
+                  <p i18n>Waiting for administrator to end voting</p>
+                </div>
+            </div>
+        </div>
+        </div>
+    </ng-container>
+
+    <ng-container *ngIf="room?.finishedVoting">
+        <p>Result:</p>
+
+        <div class="lists">
+            <ul class="nes-list is-disc">
+              <li *ngFor="let option of getOrderResults(); let index = index;">{{index + 1}}º {{option}}</li>
+            </ul>
+        </div>
+
+        <br>
+
+        <button i18n *ngIf="isAdmin()" type="button" (click)="resetVoting()" class="nes-btn is-primary">
+            Reset voting
+        </button>
+
+        <div *ngIf="!isAdmin()"
+            fxLayout="row">
+            <section class="icon-list" [style.marginTop.em]="3">
+                <i class="nes-mario"></i>
+              </section>
+            <div>
+                <div class="nes-balloon from-left">
+                  <p i18n>Waiting for administrator to reset voting</p>
+                </div>
+            </div>
+        </div>
+    </ng-container>
+
+</div>

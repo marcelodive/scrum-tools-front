@@ -2,10 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { UtilitiesService } from 'src/app/service/utilities.service';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Room } from 'src/app/interface/room';
+import { PokerRoom } from 'src/app/interface/poker-room';
 import { Socket } from 'ngx-socket-io';
 import { NewUserInfo } from 'src/app/interface/new-user-info';
 import { PokerUser } from 'src/app/interface/poker-user';
+import { BallotRoom } from 'src/app/interface/ballot-room';
+import { BallotUser } from 'src/app/interface/ballot-user';
 
 @Component({
   selector: 'app-identification',
@@ -33,10 +35,10 @@ export class IdentificationComponent implements OnInit {
     const username: string = this.identificationForm.get('name')?.value;
     if (this.roomId) {
       const newUserInfo: NewUserInfo = { roomId: this.roomId, username };
-      this.socket.emit(`new user enter ${this.tool} room`, newUserInfo);
       this.joinWSRoom(this.roomId);
+      this.socket.emit(`new user enter ${this.tool} room`, newUserInfo);
     } else {
-      const room: Room = this.buildRoom();
+      const room: PokerRoom | BallotRoom = this.buildRoom();
       const queryParams = { stringifiedRoom: JSON.stringify(room), username };
       this.joinWSRoom(room.id);
       this.router.navigate([`/${this.tool}`], { queryParams });
@@ -47,16 +49,25 @@ export class IdentificationComponent implements OnInit {
     this.socket.emit(`join room`, roomId);
   }
 
-  private buildRoom(): Room {
+  private buildRoom(): PokerRoom | BallotRoom {
     const username: string = this.identificationForm.get('name')?.value;
+    const userPropertyName = this.tool + 'Users'; 
+    const additionalProperties: any = {};
+    additionalProperties[userPropertyName] = [{
+      name: username,
+    }];
 
-    return {
+    if (this.tool === 'ballot') {
+      additionalProperties.options = ['']; 
+    }
+
+    const room: PokerRoom | BallotRoom = {
       id: this.utilitiesService.generateRandomString(),
       admin: username,
-      pokerUsers: [{
-        name: username,
-      }]
+      ...additionalProperties
     };
+
+    return room;
   }
 
   private setPropertiesFromQueryParams() {
@@ -72,8 +83,9 @@ export class IdentificationComponent implements OnInit {
   private setSocketsSubscribers() {
     this.socket.fromEvent('room updated').subscribe((room) => {
       const username: string = this.identificationForm.get('name')?.value;
-      const updatedRoom: Room = room as Room;
-      if (updatedRoom.pokerUsers.find((pokerUser: PokerUser) => pokerUser.name === username)) {
+      const updatedRoom: any = room as PokerRoom | BallotRoom;
+      const users = updatedRoom[this.tool + 'Users'];
+      if (users.find((user: PokerUser | BallotUser) => user.name === username)) {
         const queryParams = { stringifiedRoom: JSON.stringify(updatedRoom), username };
         this.router.navigate([`/${this.tool}`], { queryParams });
       }

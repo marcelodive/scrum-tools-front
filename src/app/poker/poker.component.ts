@@ -1,10 +1,11 @@
 import { Location } from '@angular/common';
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Room } from '../interface/room';
+import { PokerRoom } from '../interface/poker-room';
 import { Socket } from 'ngx-socket-io';
 import { PokerUser } from '../interface/poker-user';
 import { NewUserInfo } from '../interface/new-user-info';
+import { UtilitiesService } from '../service/utilities.service';
 
 @Component({
   selector: 'app-poker',
@@ -13,14 +14,14 @@ import { NewUserInfo } from '../interface/new-user-info';
 })
 export class PokerComponent implements OnInit {
 
-  room: Room | undefined;
+  room: PokerRoom | undefined;
   myPokerUser: PokerUser | undefined;
   username: string = '';
   selectedCard: number = 0;
   cardNumbers: number[] = [1, 2, 3, 5, 8, 13];
 
   constructor(private activatedRoute: ActivatedRoute, private router: Router,
-    private location: Location, private socket: Socket) { }
+    private location: Location, private socket: Socket, private utilitiesService: UtilitiesService) { }
 
   ngOnInit(): void {
     this.setPropertiesFromQueryParamsOrLocalStorage();
@@ -40,7 +41,7 @@ export class PokerComponent implements OnInit {
     const votes = this.room?.pokerUsers.map((pokerUser) => pokerUser.vote) || [];
     const validVotes = votes.filter((vote) => vote != null) || [];
 
-    return votes.length ? this.getMode(validVotes as number[]) : 0;
+    return votes.length ? this.utilitiesService.getMode(validVotes as number[]) : 0;
   }
 
   updateUserVote(cardNumber: number) {
@@ -74,28 +75,9 @@ export class PokerComponent implements OnInit {
     }
   }
 
-  private getMode(votes: number[]) {
-    const indexedVotes = votes.reduce((indexed: { [n: number]: number }, vote) => {
-      indexed[vote] = indexed[vote] ? indexed[vote] + 1 : 1;
-      return indexed;
-    }, {});
-
-    return Object.keys(indexedVotes).reduce((modeCard, cardNumber: string) => {
-      const safeCardNumber = Number(cardNumber);
-      const modeQuantityVotes = indexedVotes[modeCard] ?? 0;
-      const cardQuantityVotes = indexedVotes[safeCardNumber] ?? 0;
-      if (modeQuantityVotes < cardQuantityVotes) {
-        modeCard = safeCardNumber;
-      } else if (modeQuantityVotes === cardQuantityVotes) {
-        modeCard = (safeCardNumber > modeCard) ? safeCardNumber : modeCard;
-      }
-      return modeCard;
-    }, 0);
-  }
-
   private setSocketsSubscribers() {
     this.socket.fromEvent('room updated').subscribe((room) => {
-      this.room = room as Room;
+      this.room = room as PokerRoom;
       this.setMyPokerUser();
     });
 
@@ -132,19 +114,21 @@ export class PokerComponent implements OnInit {
   }
 
   private updateRoomAbroad() {
-    this.socket.emit('room updated', this.room);
-    this.saveInformationsLocally();
+    if (this.room) {
+      this.socket.emit('room updated', this.room);
+      this.saveInformationsLocally();
+    }
   }
 
   private saveInformationsLocally() {
-    localStorage.setItem('room', JSON.stringify(this.room));
-    localStorage.setItem('username', this.username);
+    sessionStorage.setItem('room' + this.room?.id, JSON.stringify(this.room));
+    sessionStorage.setItem('username' + this.room?.id, this.username);
   }
 
   private getInformationsLocally(roomId: string = '') {
-    const localStorageRoom = localStorage.getItem('room');
+    const localStorageRoom = sessionStorage.getItem('room' + roomId);
     this.room = localStorageRoom ? JSON.parse(localStorageRoom) : '';
-    this.username = localStorage.getItem('username') ?? '';
+    this.username = sessionStorage.getItem('username' + roomId) ?? '';
     if (!this.username) {
       this.getUserIdentification(roomId);
     }
