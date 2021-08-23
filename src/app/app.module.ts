@@ -8,7 +8,7 @@ import { BallotModule } from './ballot/ballot.module';
 import { SharedModule } from './shared/shared.module';
 import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 
-const config: SocketIoConfig = { url: 'http://localhost:5000', options: {} };
+const config: SocketIoConfig = { url: 'https://marcelodive.pythonanywhere.com', options: {} };
 
 @NgModule({
   declarations: [
