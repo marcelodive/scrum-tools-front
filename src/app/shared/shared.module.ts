@@ -4,17 +4,22 @@ import { IdentificationComponent } from './identification/identification.compone
 import { ReactiveFormsModule } from '@angular/forms';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
 import { FlexLayoutModule } from '@angular/flex-layout';
+import { ScrumToolsComponent } from './scrum-tools/scrum-tools.component';
+import { RouterModule } from '@angular/router';
 
 
 
 @NgModule({
   declarations: [
     IdentificationComponent,
-    PageNotFoundComponent
+    PageNotFoundComponent,
+    ScrumToolsComponent
   ],
   imports: [
     CommonModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    FlexLayoutModule,
+    RouterModule
   ],
   exports: [
     IdentificationComponent,

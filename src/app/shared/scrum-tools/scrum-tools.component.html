@@ -1,0 +1,21 @@
+<div [style.margin.em]="1">
+    <div fxLayout="row" fxLayoutAlign="start start">
+        <h1 class="nes-text is-primary">Scrum Tools</h1>
+        <h6 class="nes-text is-disabled">v.0.1</h6>
+    </div>
+    
+    <br>
+    
+    <div class="nes-container is-centered">
+        <p>Choose your destiny</p>
+    </div>
+    
+    <br>
+    
+    <div fxLayout="row" fxLayoutAlign="space-around center">
+        <button type="button" [routerLink]="['/identification']" [queryParams]="{tool:'poker'}" class="nes-btn is-success">Poker</button>
+        <button type="button" [routerLink]="['/identification']" [queryParams]="{tool:'ballot'}" class="nes-btn is-warning">Ballot</button>
+    </div>
+</div>
+
+

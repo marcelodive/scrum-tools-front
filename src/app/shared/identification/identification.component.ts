@@ -8,6 +8,7 @@ import { NewUserInfo } from 'src/app/interface/new-user-info';
 import { PokerUser } from 'src/app/interface/poker-user';
 import { BallotRoom } from 'src/app/interface/ballot-room';
 import { BallotUser } from 'src/app/interface/ballot-user';
+import { RoomService } from 'src/app/service/room.service';
 
 @Component({
   selector: 'app-identification',
@@ -23,7 +24,7 @@ export class IdentificationComponent implements OnInit {
     name: new FormControl('', [Validators.required])
   });
 
-  constructor(private utilitiesService: UtilitiesService,
+  constructor(private utilitiesService: UtilitiesService, private roomService: RoomService,
     private router: Router, private activatedRoute: ActivatedRoute, private socket: Socket) { }
 
   ngOnInit(): void {
@@ -35,18 +36,14 @@ export class IdentificationComponent implements OnInit {
     const username: string = this.identificationForm.get('name')?.value;
     if (this.roomId) {
       const newUserInfo: NewUserInfo = { roomId: this.roomId, username };
-      this.joinWSRoom(this.roomId);
+      this.roomService.joinWSRoom(this.roomId);
       this.socket.emit(`new user enter ${this.tool} room`, newUserInfo);
     } else {
       const room: PokerRoom | BallotRoom = this.buildRoom();
       const queryParams = { stringifiedRoom: JSON.stringify(room), username };
-      this.joinWSRoom(room.id);
+      this.roomService.joinWSRoom(room.id);
       this.router.navigate([`/${this.tool}`], { queryParams });
     }
-  }
-
-  private joinWSRoom(roomId: string) {
-    this.socket.emit(`join room`, roomId);
   }
 
   private buildRoom(): PokerRoom | BallotRoom {

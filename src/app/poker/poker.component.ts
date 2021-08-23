@@ -6,6 +6,7 @@ import { Socket } from 'ngx-socket-io';
 import { PokerUser } from '../interface/poker-user';
 import { NewUserInfo } from '../interface/new-user-info';
 import { UtilitiesService } from '../service/utilities.service';
+import { RoomService } from '../service/room.service';
 
 @Component({
   selector: 'app-poker',
@@ -20,7 +21,7 @@ export class PokerComponent implements OnInit {
   selectedCard: number = 0;
   cardNumbers: number[] = [1, 2, 3, 5, 8, 13];
 
-  constructor(private activatedRoute: ActivatedRoute, private router: Router,
+  constructor(private activatedRoute: ActivatedRoute, private router: Router, public roomService: RoomService,
     private location: Location, private socket: Socket, private utilitiesService: UtilitiesService) { }
 
   ngOnInit(): void {
@@ -75,6 +76,10 @@ export class PokerComponent implements OnInit {
     }
   }
 
+  isAdmin() {
+    return (this.room?.admin === this.username);
+  }
+
   private setSocketsSubscribers() {
     this.socket.fromEvent('room updated').subscribe((room) => {
       this.room = room as PokerRoom;
@@ -82,11 +87,17 @@ export class PokerComponent implements OnInit {
     });
 
     this.socket.fromEvent('new user enter poker room').subscribe((newUserInfo) => {
-      const userInfo: NewUserInfo = newUserInfo as NewUserInfo;
-      const pokerUser: PokerUser = { name: userInfo?.username };
-      this.room?.pokerUsers.push(pokerUser);
-      this.updateRoomAbroad();
+      if (this.isAdmin()) {
+        const userInfo: NewUserInfo = newUserInfo as NewUserInfo;
+        const pokerUser: PokerUser = { name: userInfo?.username };
+        this.room?.pokerUsers.push(pokerUser);
+        this.updateRoomAbroad();
+      }
     });
+
+    this.socket.fromEvent('user left the room').subscribe((username) => {
+      this.roomService.removeUserFromRoom(this.room, 'poker', username as string);
+    })
   }
 
   private setPropertiesFromQueryParamsOrLocalStorage() {
@@ -95,8 +106,10 @@ export class PokerComponent implements OnInit {
         this.room = JSON.parse(stringifiedRoom);
         this.username = username;
         this.saveInformationsLocally();
+        this.roomService.joinWSRoom(this.room?.id || '');
       } else {
         this.getInformationsLocally(roomId);
+        this.roomService.joinWSRoom(roomId);
       }
       this.setMyPokerUser()
     });
@@ -114,10 +127,8 @@ export class PokerComponent implements OnInit {
   }
 
   private updateRoomAbroad() {
-    if (this.room) {
-      this.socket.emit('room updated', this.room);
-      this.saveInformationsLocally();
-    }
+    this.socket.emit('room updated', this.room);
+    this.saveInformationsLocally();
   }
 
   private saveInformationsLocally() {

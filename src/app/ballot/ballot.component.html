@@ -1,7 +1,16 @@
 <div [style.margin.em]="1">
-    <div fxLayout="row" fxLayoutAlign="start start">
-        <h1 class="nes-text is-primary">Scrum ballot</h1>
-        <h6 class="nes-text is-disabled">v.0.1</h6>
+
+    <div fxLayout="row" fxLayoutAlign="space-between center">
+        <div fxLayout="row" fxLayoutAlign="start start">
+            <h1 class="nes-text is-primary">Scrum ballot</h1>
+            <h6 class="nes-text is-disabled">v.0.1</h6>
+        </div>
+        <div>
+            <div class="nes-container is-dark with-title" *ngIf="isAdmin()">
+                <p class="title">Share</p>
+                <p>{{ roomService.getShareLink(room?.id) }}</p>
+            </div>            
+        </div>
     </div>
 
     <div class="users-list">
@@ -24,7 +33,7 @@
         <br>
     
         <ng-container *ngIf="isAdmin()">
-            <button i18n type="button" (click)="startVoting()" class="nes-btn is-primary"
+            <button i18n type="button" (click)="setRoomToStartVoting()" class="nes-btn is-primary"
             [ngClass]="{'is-disabled': !canStartVoting()}" [disabled]="!canStartVoting()">
                 Start voting
             </button>
@@ -44,16 +53,14 @@
     </div>
 
     <ng-container *ngIf="room?.startedVoting && !room?.finishedVoting">
-        <div fxLayout="row" fxLayoutAlign="center center">
-            <ngx-sortable [items]="myBallotUser?.optionsToSort || []" [name]="'Sort:'" 
-                (listSorted)="listOrderChanged($event)" [listStyle]="{width:'100%', height:'100%'}">
-                <ng-template let-item>
-                    <div class="sortable-list-item">
-                        {{item}}
-                    </div>
-                </ng-template>
-            </ngx-sortable>
-        </div>
+        <ngx-sortable [items]="myBallotUser?.optionsToSort || []" [name]="'Sort:'" 
+            (listSorted)="listOrderChanged($event)" [listStyle]="{width:'100%', height:'100%'}">
+            <ng-template let-item>
+                <div class="sortable-list-item">
+                    {{item}}
+                </div>
+            </ng-template>
+        </ngx-sortable>
 
         <br>
 

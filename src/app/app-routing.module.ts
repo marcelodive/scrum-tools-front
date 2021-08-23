@@ -4,8 +4,10 @@ import { BallotComponent } from './ballot/ballot.component';
 import { PokerComponent } from './poker/poker.component';
 import { IdentificationComponent } from './shared/identification/identification.component';
 import { PageNotFoundComponent } from './shared/page-not-found/page-not-found.component';
+import { ScrumToolsComponent } from './shared/scrum-tools/scrum-tools.component';
 
 const routes: Routes = [
+  { path: '', component: ScrumToolsComponent },
   { path: 'poker', component: PokerComponent },
   { path: 'ballot', component: BallotComponent },
   { path: 'identification', component: IdentificationComponent },

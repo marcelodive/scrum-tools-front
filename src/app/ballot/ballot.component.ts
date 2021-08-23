@@ -1,10 +1,11 @@
 import { Location } from '@angular/common';
-import { Component, OnInit } from '@angular/core';
+import { Component, HostListener, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { Socket } from 'ngx-socket-io';
 import { NewUserInfo } from '../interface/new-user-info';
 import { BallotRoom } from '../interface/ballot-room';
 import { BallotUser } from '../interface/ballot-user';
+import { RoomService } from '../service/room.service';
 
 @Component({
   selector: 'app-ballot',
@@ -17,14 +18,19 @@ export class BallotComponent implements OnInit {
   username: string = '';
   myBallotUser: BallotUser | undefined;
   options: {[n: number]: string} = {};
+  urlLinkShare: string = '';
 
   constructor(private activatedRoute: ActivatedRoute, private router: Router, private socket: Socket,
-    private location: Location) { }
+    private location: Location, public roomService: RoomService) { }
 
   ngOnInit(): void {
     this.setPropertiesFromQueryParamsOrLocalStorage();
     this.setSocketsSubscribers();
     this.setUrlToShare();
+    
+    if (this.room?.startedVoting && !this.room?.finishedVoting) {
+      this.setRoomToStartVoting();
+    }
   }
 
   addOption(index: number, option: string) {
@@ -51,14 +57,14 @@ export class BallotComponent implements OnInit {
     return this.room?.options?.length ? (this.room?.options?.length > 2) : false;
   }
 
-  startVoting() {
+  setRoomToStartVoting() {
     this.removeInvalidOptions(true);
 
     if (this.room) {
       this.room.startedVoting = true;
       this.room.ballotUsers.forEach((ballotUser) => {
         if (this.room?.options) {
-          ballotUser.optionsToSort = [...this.room?.options];
+          ballotUser.optionsToSort = [...this.room?.options.map((option) => '- ' + option)];
         }
       });
     }
@@ -67,7 +73,7 @@ export class BallotComponent implements OnInit {
   }
 
   listOrderChanged($event: any) {
-    console.log($event);
+    this.updateRoomAbroad();
   }
 
   finishSorting() {
@@ -88,6 +94,7 @@ export class BallotComponent implements OnInit {
     const ordenationResult: {[s: string]: number} = {};
     this.room?.ballotUsers.forEach((user) => {
       user.sort?.forEach((option, index) => {
+        ordenationResult[option] = ordenationResult[option] || 0;
         ordenationResult[option] = ordenationResult[option] + index;
       });
     });
@@ -97,7 +104,7 @@ export class BallotComponent implements OnInit {
       return (ordenationResult[optionA] > ordenationResult[optionB]) ? 1 : -1;
     });
 
-    return options.reverse();
+    return options;
   }
 
   resetVoting() {
@@ -117,6 +124,11 @@ export class BallotComponent implements OnInit {
     return (this.room?.admin === this.myBallotUser?.name);
   }
 
+  @HostListener('window:unload', ['$event'])
+  private unloadHandler(event: any) {
+    this.roomService.leftWSRoom(this.room?.id, this.myBallotUser?.name);
+  }
+
   private removeInvalidOptions(removeLast: boolean = false) {
     if (this.room?.options) {
       this.room.options = this.room?.options?.filter((option, index) => {
@@ -133,8 +145,10 @@ export class BallotComponent implements OnInit {
         this.room = JSON.parse(stringifiedRoom);
         this.username = username;
         this.saveInformationsLocally();
+        this.roomService.joinWSRoom(this.room?.id || '');
       } else {
         this.getInformationsLocally(roomId);
+        this.roomService.joinWSRoom(this.room?.id || '');
       }
       this.setMyBallotUser();
       this.setInputValues();
@@ -170,21 +184,22 @@ export class BallotComponent implements OnInit {
     });
 
     this.socket.fromEvent('new user enter ballot room').subscribe((newUserInfo) => {
-      const userInfo: NewUserInfo = newUserInfo as NewUserInfo;
-      const ballotUser: BallotUser = { name: userInfo?.username };
-      this.room?.ballotUsers?.push(ballotUser);
-      this.updateRoomAbroad();
+      if (this.isAdmin()) {
+        const userInfo: NewUserInfo = newUserInfo as NewUserInfo;
+        const ballotUser: BallotUser = { name: userInfo?.username };
+        this.room?.ballotUsers?.push(ballotUser);
+        this.updateRoomAbroad();
+      }
     });
 
-    // setInterval(() => this.isAdmin() && this.updateRoomAbroad(), 5000)
+    this.socket.fromEvent('user left the room').subscribe((username) => {
+      this.roomService.removeUserFromRoom(this.room, 'ballot', username as string);
+    })
   }
 
   private updateRoomAbroad() {
-    if (this.room) {
-      console.log('updating room abroad');
-      this.socket.emit('room updated', this.room);
-      this.saveInformationsLocally();
-    }
+    this.socket.emit('room updated', this.room);
+    this.saveInformationsLocally();
   }
 
   private setMyBallotUser() {
