@@ -7,6 +7,7 @@ import { PokerModule } from './poker/poker.module';
 import { BallotModule } from './ballot/ballot.module';
 import { SharedModule } from './shared/shared.module';
 import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
+import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 
 const config: SocketIoConfig = { url: 'https://marcelodive.pythonanywhere.com', options: {} };
 
@@ -22,7 +23,7 @@ const config: SocketIoConfig = { url: 'https://marcelodive.pythonanywhere.com', 
     SharedModule,
     SocketIoModule.forRoot(config)
   ],
-  providers: [],
+  providers: [{provide: LocationStrategy, useClass: HashLocationStrategy}],
   bootstrap: [AppComponent]
 })
 export class AppModule { }
