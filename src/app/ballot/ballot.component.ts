@@ -64,7 +64,11 @@ export class BallotComponent implements OnInit {
       this.room.startedVoting = true;
       this.room.ballotUsers.forEach((ballotUser) => {
         if (this.room?.options) {
-          ballotUser.optionsToSort = [...this.room?.options.map((option) => '- ' + option)];
+          const optionsToSort = [...this.room?.options.map((option) => '- ' + option)];
+          ballotUser.optionsToSort = ballotUser.optionsToSort || [];
+          if (!optionsToSort.every((option) => ballotUser?.optionsToSort?.includes(option))) {
+            ballotUser.optionsToSort= optionsToSort;
+          }
         }
       });
     }
@@ -73,6 +77,7 @@ export class BallotComponent implements OnInit {
   }
 
   listOrderChanged($event: any) {
+    console.log($event);
     this.updateRoomAbroad();
   }
 

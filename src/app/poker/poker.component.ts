@@ -60,9 +60,9 @@ export class PokerComponent implements OnInit {
   }
 
   getVotePercentage() {
-    const countPokerUsers = this.room?.pokerUsers.length || 1;
-    const countPokersUsersWhoVoted: number = this.room?.pokerUsers.filter(
-      (pokerUser) => pokerUser.vote).length || 0;
+    const countPokerUsers = this.room?.pokerUsers?.length || 1;
+    const countPokersUsersWhoVoted: number = this.room?.pokerUsers?.filter(
+      (pokerUser) => pokerUser.vote)?.length || 0;
     return (countPokersUsersWhoVoted / countPokerUsers) * 100;
   }
 
@@ -116,7 +116,7 @@ export class PokerComponent implements OnInit {
   }
 
   private setMyPokerUser() {
-    this.myPokerUser = this.room?.pokerUsers.find(
+    this.myPokerUser = this.room?.pokerUsers?.find(
       (pokerUser) => pokerUser.name === this.username);
   }
 
