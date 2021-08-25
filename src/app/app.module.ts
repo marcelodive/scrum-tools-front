@@ -10,7 +10,7 @@ import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 
 // const config: SocketIoConfig = { url: 'http://127.0.0.1:5000', options: {} };
-const config: SocketIoConfig = { url: 'https://marcelodive.pythonanywhere.com', options: {} };
+const config: SocketIoConfig = { url: 'https://young-river-33989.herokuapp.com', options: {} };
 
 @NgModule({
   declarations: [
