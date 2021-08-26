@@ -19,7 +19,8 @@ export class RoomService {
   }
 
   getShareLink(roomId:string = '') {
-    return location.origin + location.pathname + '?roomId=' + roomId;
+    const tool = location.hash.includes('poker') ? 'poker' : 'ballot';
+    return location.origin + location.pathname + '#/' + tool + '?roomId=' + roomId;
   }
 
   removeUserFromRoom(room: any, tool: string, username: string) {

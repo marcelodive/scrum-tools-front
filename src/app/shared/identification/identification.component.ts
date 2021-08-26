@@ -20,6 +20,7 @@ export class IdentificationComponent implements OnInit {
   buttonText: string = '';
   tool: string = '';
   roomId: string = '';
+  isBtnDisabled = false;
   identificationForm = new FormGroup({
     name: new FormControl('', [Validators.required])
   });
@@ -32,7 +33,8 @@ export class IdentificationComponent implements OnInit {
     this.setSocketsSubscribers();
   }
 
-  onSubmit() {    
+  onSubmit() {
+    this.isBtnDisabled = true;
     const username: string = this.identificationForm.get('name')?.value;
     if (this.roomId) {
       const newUserInfo: NewUserInfo = { roomId: this.roomId, username };
