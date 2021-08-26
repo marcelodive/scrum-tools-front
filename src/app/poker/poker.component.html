@@ -1,11 +1,11 @@
 <div [style.margin.em]="1">
 
-    <div fxLayout="row" fxLayoutAlign="space-between center">
+    <div fxLayout="row wrap" fxLayoutAlign="space-between center">
         <div fxLayout="row" fxLayoutAlign="start start">
             <h1 class="nes-text is-primary">Scrum poker</h1>
             <h6 class="nes-text is-disabled">v.0.1</h6>
         </div>
-        <div>
+        <div class="share-link">
             <div class="nes-container is-dark with-title" *ngIf="isAdmin()">
                 <p class="title">Share</p>
                 <p>{{ roomService.getShareLink(room?.id) }}</p>
@@ -24,7 +24,7 @@
     <p *ngIf="!room?.finishedVoting" i18n>Select your vote:</p>
     <p *ngIf="room?.finishedVoting" i18n>Result:</p>
 
-    <div fxLayout="row" fxLayoutAlign="space-around center">
+    <div fxLayout="row wrap" fxLayoutAlign="space-around center">
         <ng-container *ngIf="!room?.finishedVoting">
             <app-card class="nes-pointer" *ngFor="let cardNumber of cardNumbers" [cardNumber]="cardNumber"
                 (click)="updateUserVote(cardNumber)" [selected]="(cardNumber === myPokerUser?.vote)"></app-card>

@@ -1,11 +1,11 @@
 <div [style.margin.em]="1">
 
-    <div fxLayout="row" fxLayoutAlign="space-between center">
+    <div fxLayout="row wrap" fxLayoutAlign="space-between center">
         <div fxLayout="row" fxLayoutAlign="start start">
             <h1 class="nes-text is-primary">Scrum ballot</h1>
             <h6 class="nes-text is-disabled">v.0.1</h6>
         </div>
-        <div>
+        <div class="share-link">
             <div class="nes-container is-dark with-title" *ngIf="isAdmin()">
                 <p class="title">Share</p>
                 <p>{{ roomService.getShareLink(room?.id) }}</p>
