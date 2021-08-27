@@ -9,7 +9,7 @@ import { SharedModule } from './shared/shared.module';
 import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 
-const config: SocketIoConfig = { url: 'https://scrum-tools-flask-qnahp.ondigitalocean.app', options: {} };
+const config: SocketIoConfig = { url: 'http://scrumtools.ml', options: {} };
 
 @NgModule({
   declarations: [
