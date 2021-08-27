@@ -9,7 +9,7 @@ import { SharedModule } from './shared/shared.module';
 import { SocketIoModule, SocketIoConfig } from 'ngx-socket-io';
 import { HashLocationStrategy, LocationStrategy } from '@angular/common';
 
-const config: SocketIoConfig = { url: 'http://a061-201-17-156-245.ngrok.io', options: {} };
+const config: SocketIoConfig = { url: location.origin, options: {} };
 
 @NgModule({
   declarations: [
