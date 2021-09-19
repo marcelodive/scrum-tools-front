@@ -29,5 +29,11 @@ export class UtilitiesService {
       return modeCard;
     }, 0);
   }
+
+  copyText(textToCopy: string) {
+    navigator.clipboard.writeText(textToCopy);
+    alert(textToCopy + ' copied to clipboard');
+  }
+
   
 }

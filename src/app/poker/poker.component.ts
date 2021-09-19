@@ -22,7 +22,7 @@ export class PokerComponent implements OnInit {
   cardNumbers: number[] = [1, 2, 3, 5, 8, 13];
 
   constructor(private activatedRoute: ActivatedRoute, private router: Router, public roomService: RoomService,
-    private location: Location, private socket: Socket, private utilitiesService: UtilitiesService) { }
+    private location: Location, private socket: Socket, public utilitiesService: UtilitiesService) { }
 
   ngOnInit(): void {
     this.setPropertiesFromQueryParamsOrLocalStorage();
@@ -48,7 +48,7 @@ export class PokerComponent implements OnInit {
   updateUserVote(cardNumber: number) {
     if (this.myPokerUser) {
       this.myPokerUser.vote = cardNumber;
-      this.updateRoomAbroad();
+      this.updateUserAbroad();
     }
   }
 
@@ -87,11 +87,19 @@ export class PokerComponent implements OnInit {
     });
 
     this.socket.fromEvent('new user enter poker room').subscribe((newUserInfo) => {
-      if (this.isAdmin()) {
         const userInfo: NewUserInfo = newUserInfo as NewUserInfo;
         const pokerUser: PokerUser = { name: userInfo?.username };
-        this.room?.pokerUsers.push(pokerUser);
-        this.updateRoomAbroad();
+        this.room?.pokerUsers?.push(pokerUser);
+        if (this.isAdmin()) {
+          this.socket.emit('update room for new user', this.room);
+        }
+    });
+
+    this.socket.fromEvent('user updated').subscribe((updatedUser) => {
+      const updatedPokerUser: PokerUser = updatedUser as PokerUser;
+      const userFromRoom = this.room?.pokerUsers.find((user: PokerUser) => updatedPokerUser?.name == user?.name);
+      if (userFromRoom) {
+        userFromRoom.vote = updatedPokerUser.vote;
       }
     });
 
@@ -128,6 +136,11 @@ export class PokerComponent implements OnInit {
 
   private updateRoomAbroad() {
     this.socket.emit('room updated', this.room);
+    this.saveInformationsLocally();
+  }
+
+  private updateUserAbroad() {
+    this.socket.emit('user updated', {...this.myPokerUser, roomId: this.room?.id});
     this.saveInformationsLocally();
   }
 

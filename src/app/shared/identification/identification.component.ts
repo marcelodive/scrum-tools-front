@@ -80,7 +80,7 @@ export class IdentificationComponent implements OnInit {
   }
   
   private setSocketsSubscribers() {
-    this.socket.fromEvent('room updated').subscribe((room) => {
+    this.socket.fromEvent('update room for new user').subscribe((room) => {
       const username: string = this.identificationForm.get('name')?.value;
       const updatedRoom: any = room as PokerRoom | BallotRoom;
       const users = updatedRoom[this.tool + 'Users'];

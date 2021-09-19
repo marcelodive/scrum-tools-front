@@ -6,6 +6,7 @@ import { NewUserInfo } from '../interface/new-user-info';
 import { BallotRoom } from '../interface/ballot-room';
 import { BallotUser } from '../interface/ballot-user';
 import { RoomService } from '../service/room.service';
+import { UtilitiesService } from '../service/utilities.service';
 
 @Component({
   selector: 'app-ballot',
@@ -21,7 +22,7 @@ export class BallotComponent implements OnInit {
   urlLinkShare: string = '';
 
   constructor(private activatedRoute: ActivatedRoute, private router: Router, private socket: Socket,
-    private location: Location, public roomService: RoomService) { }
+    private location: Location, public roomService: RoomService, public utilitiesService: UtilitiesService) { }
 
   ngOnInit(): void {
     this.setPropertiesFromQueryParamsOrLocalStorage();
@@ -76,15 +77,12 @@ export class BallotComponent implements OnInit {
     this.updateRoomAbroad();
   }
 
-  listOrderChanged($event: any) {
-    console.log($event);
-    this.updateRoomAbroad();
-  }
+  listOrderChanged($event: any) { }
 
   finishSorting() {
     if (this.myBallotUser) {
       this.myBallotUser.sort = this.myBallotUser?.optionsToSort;
-      this.updateRoomAbroad();
+      this.updateUserAbroad();
     }
   }
 
@@ -189,21 +187,36 @@ export class BallotComponent implements OnInit {
     });
 
     this.socket.fromEvent('new user enter ballot room').subscribe((newUserInfo) => {
+      const userInfo: NewUserInfo = newUserInfo as NewUserInfo;
+      const ballotUser: BallotUser = { name: userInfo?.username };
+      this.room?.ballotUsers?.push(ballotUser);
       if (this.isAdmin()) {
-        const userInfo: NewUserInfo = newUserInfo as NewUserInfo;
-        const ballotUser: BallotUser = { name: userInfo?.username };
-        this.room?.ballotUsers?.push(ballotUser);
-        this.updateRoomAbroad();
+        this.socket.emit('update room for new user', this.room);
       }
     });
 
     this.socket.fromEvent('user left the room').subscribe((username) => {
       this.roomService.removeUserFromRoom(this.room, 'ballot', username as string);
-    })
+    });
+
+    this.socket.fromEvent('user updated').subscribe((updatedUser) => {
+      const updatedBallotUser: BallotUser = updatedUser as BallotUser;
+      const userFromRoom = this.room?.ballotUsers.find((user: BallotUser) => updatedBallotUser?.name == user?.name);
+      if (userFromRoom) {
+        userFromRoom.optionsToSort = updatedBallotUser.optionsToSort;
+        userFromRoom.sort = updatedBallotUser.sort;
+      }
+    });
+
   }
 
   private updateRoomAbroad() {
     this.socket.emit('room updated', this.room);
+    this.saveInformationsLocally();
+  }
+
+  private updateUserAbroad() {
+    this.socket.emit('user updated', {...this.myBallotUser, roomId: this.room?.id});
     this.saveInformationsLocally();
   }
 

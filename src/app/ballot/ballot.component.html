@@ -3,12 +3,13 @@
     <div fxLayout="row wrap" fxLayoutAlign="space-between start">
         <div fxLayout="row" fxLayoutAlign="start start">
             <h1 class="nes-text is-primary">Scrum ballot</h1>
-            <h6 class="nes-text is-disabled">v.0.1</h6>
+            <h6 class="nes-text is-disabled">v.0.2</h6>
         </div>
         <div class="share-link">
             <div class="nes-container is-dark with-title" *ngIf="isAdmin()">
                 <p class="title">Share</p>
-                <p>{{ roomService.getShareLink(room?.id) }}</p>
+                <p (click)="utilitiesService.copyText(roomService.getShareLink(room?.id))" class="nes-pointer">
+                    {{ roomService.getShareLink(room?.id) }}</p>
             </div>            
         </div>
     </div>
